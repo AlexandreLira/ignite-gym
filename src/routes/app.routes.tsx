@@ -9,11 +9,13 @@ import HistorySvg from '@assets/history.svg'
 import { useTheme } from 'native-base'
 import { SvgProps } from 'react-native-svg'
 import { Platform } from 'react-native'
+import { Exercise } from '@screens/Exercise/Exercise'
 
 type AppRoutes = {
     Home: undefined;
     History: undefined;
     Profile: undefined;
+    Exercise: undefined;
 }
 
 type ScreensProps = {
@@ -24,10 +26,11 @@ type ScreensProps = {
 
 export type AppNavigatorRoutesProps = BottomTabNavigationProp<AppRoutes>
 
+
 export function AppRoutes() {
     const { Navigator, Screen } = createBottomTabNavigator<AppRoutes>()
     const { sizes, colors } = useTheme()
-    const iconSize = sizes['6']
+    const ICON_SIZE = sizes['6']
 
     const screens: ScreensProps[] = [
         {
@@ -43,6 +46,11 @@ export function AppRoutes() {
         {
             name: 'Profile',
             component: Profile,
+            Icon: ProfileSvg
+        },
+        {
+            name: 'Exercise',
+            component: Exercise,
             Icon: ProfileSvg
         },
     ]
@@ -71,11 +79,12 @@ export function AppRoutes() {
                     name={screen.name}
                     component={screen.component}
                     options={{
-                        tabBarIcon: ({color}) =>
+                        tabBarButton: screen.name === 'Exercise' ? () => null : undefined,
+                        tabBarIcon: ({ color }) =>
                             <screen.Icon
                                 fill={color}
-                                width={iconSize}
-                                height={iconSize}
+                                width={ICON_SIZE}
+                                height={ICON_SIZE}
                             />
                     }}
                 />
