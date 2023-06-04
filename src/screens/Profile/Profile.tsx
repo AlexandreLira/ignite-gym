@@ -108,6 +108,7 @@ export function Profile() {
                         color="gray.200"
                         fontSize="md"
                         mb={2}
+                        fontFamily="heading"
                     >
                         Alterar senha
                     </Heading>

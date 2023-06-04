@@ -24,6 +24,7 @@ export function HeaderHome() {
                 <Heading
                     color="gray.100"
                     fontSize="md"
+                    fontFamily="heading"
                 >
                     Alexandre
                 </Heading>

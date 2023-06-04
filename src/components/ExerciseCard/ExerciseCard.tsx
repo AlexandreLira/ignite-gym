@@ -22,7 +22,7 @@ export function ExerciseCard({ ...rest }: Props) {
                 />
 
                 <VStack justifyContent="space-evenly" flex={1}>
-                    <Heading fontSize="lg" color="white">
+                    <Heading fontSize="lg" color="white" fontFamily="heading">
                         Remanda unilateral
                     </Heading>
 
