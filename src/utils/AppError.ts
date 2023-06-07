@@ -4,4 +4,8 @@ export class AppError {
     constructor(message: string) {
         this.message = message
     }
+
+    static isAppError(error: unknown){
+        return error instanceof AppError
+    }
 }
