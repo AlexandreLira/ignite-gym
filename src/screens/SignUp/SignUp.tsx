@@ -1,11 +1,12 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
     VStack,
     Image,
     Center,
     Text,
     Heading,
-    ScrollView
+    ScrollView,
+    useToast
 } from "native-base";
 import { useNavigation } from '@react-navigation/native';
 
@@ -19,6 +20,9 @@ import { AuthNavigatorRoutesProps } from "@routes/auth.routes";
 
 import BackgroundImg from '@assets/background.png';
 import LogoSvg from '@assets/logo.svg'
+import { User } from "@services/userService";
+import { AppError } from "@utils/AppError";
+import { useAuth } from "@hooks/useAuth";
 
 type FormDataProps = {
     name: string;
@@ -47,23 +51,51 @@ const schema = yup.object({
 }).required()
 
 export function SignUp() {
-
+    const [isLoading, setIsLoading] = useState(false)
     const navigation = useNavigation<AuthNavigatorRoutesProps>()
     const { control, handleSubmit, formState: { errors } } = useForm<FormDataProps>({
         resolver: yupResolver(schema)
     });
+    const toast = useToast()
+    const { login } = useAuth()
 
     function handleGoBack() {
         navigation.goBack()
     }
 
-    function handleSignIn(data: FormDataProps) {
-        console.log(data)
+    async function handleSignUp(data: FormDataProps) {
+        setIsLoading(true)
+        try {
+            const { email, name, password } = data
+
+            const response = await User.create({
+                email, name, password
+            })
+
+            if (response.status !== 201) return
+
+            const loginUser = await User.signIn({ email, password })
+           
+            login(loginUser.user)
+
+        } catch (error) {
+            const isAppError = error instanceof AppError
+            const title = isAppError ? error.message : 'Não foi possivel criar a conta. Tente novamente mais tarde.'
+
+            toast.show({
+                title,
+                placement: 'bottom',
+                bgColor: 'red.500',
+                width: '100%',
+                paddingX: 10
+            })
+
+        } finally {
+            setIsLoading(false)
+        }
+
     }
 
-    useEffect(() => {
-
-    }, [])
 
     return (
         <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
@@ -140,14 +172,18 @@ export function SignUp() {
                                 secureTextEntry
                                 onChangeText={onChange}
                                 value={value}
-                                onSubmitEditing={handleSubmit(handleSignIn)}
+                                onSubmitEditing={handleSubmit(handleSignUp)}
                                 returnKeyType="send"
                                 errorMessage={errors.password_confirm?.message}
                             />
                         )}
                     />
 
-                    <Button title="Acessar" onPress={handleSubmit(handleSignIn)} />
+                    <Button
+                        title="Criar"
+                        onPress={handleSubmit(handleSignUp)}
+                        isLoading={isLoading}
+                    />
                 </Center>
 
                 <Button

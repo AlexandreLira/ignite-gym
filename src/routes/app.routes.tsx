@@ -69,7 +69,7 @@ export function AppRoutes() {
                     borderTopRightRadius: 16,
                     marginBottom: 20,
                     marginHorizontal: 20,
-                    height: Platform.OS === 'android' ? 60 : 96
+                    height: Platform.OS === 'android' ? 60 : 96,
                 }
             }}
         >

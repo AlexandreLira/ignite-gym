@@ -1,12 +1,21 @@
-import { Box, Center, HStack, Heading, Icon, Image, Text, VStack } from "native-base";
+import { HStack, Heading, Icon, Image, Text, VStack } from "native-base";
 import { MaterialIcons } from "@expo/vector-icons";
 import userPhotoDefaut from "@assets/userPhotoDefault.png"
 import { UserPhoto } from "@components/UserPhoto/UserPhoto";
+import { useAuth } from "@hooks/useAuth";
+import { TouchableOpacity } from "react-native";
 export function HeaderHome() {
+    const { logout, user } = useAuth()
+    const avatar = user.avatar ? { uri: user.avatar } : userPhotoDefaut
+    function handleLogout() {
+        logout()
+    }
+
+
     return (
         <HStack bg="gray.600" px={8} pb={5} pt={16} alignItems="center">
             <UserPhoto
-                source={{ uri: 'https://media.istockphoto.com/id/1273297997/pt/vetorial/default-avatar-profile-icon-grey-photo-placeholder-hand-drawn-modern-man-avatar-profile.jpg?s=170667a&w=0&k=20&c=WNmepfNFHch8p2K8zGEUyuvIPzF6YYbVyN0SMv2PlUQ='}}
+                source={avatar}
                 size={16}
                 alt="Profile photo"
                 mr={4}
@@ -26,16 +35,19 @@ export function HeaderHome() {
                     fontSize="md"
                     fontFamily="heading"
                 >
-                    Alexandre
+                    {user.name}
                 </Heading>
             </VStack>
-
-            <Icon
-                as={MaterialIcons}
-                name="logout"
-                color="gray.200"
-                size={7}
-            />
+            <TouchableOpacity
+                onPress={handleLogout}
+            >
+                <Icon
+                    as={MaterialIcons}
+                    name="logout"
+                    color="gray.200"
+                    size={7}
+                />
+            </TouchableOpacity>
         </HStack>
     )
 }

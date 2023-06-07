@@ -4,7 +4,8 @@ import {
     Center,
     Text,
     Heading,
-    ScrollView
+    ScrollView,
+    useToast
 } from "native-base";
 import { useNavigation } from '@react-navigation/native'
 
@@ -18,6 +19,10 @@ import { AuthNavigatorRoutesProps } from "@routes/auth.routes";
 
 import { Input } from "@components/Input/Input";
 import { Button } from "@components/Button/Button";
+import { User } from "@services/userService";
+import { AppError } from "@utils/AppError";
+import { useState } from "react";
+import { useAuth } from "@hooks/useAuth";
 
 type FormProps = {
     email: string;
@@ -30,18 +35,38 @@ const schema = yup.object({
 })
 
 export function SignIn() {
-
+    const [isLoading, setIsLoading] = useState(false)
     const navigation = useNavigation<AuthNavigatorRoutesProps>()
     const { control, handleSubmit, formState: { errors } } = useForm<FormProps>({
         resolver: yupResolver(schema)
     })
 
+    const { user, login } = useAuth()
+
+    const toast = useToast()
+
+
     function handleNewAccount() {
         navigation.navigate('signUp')
     }
 
-    function handleSignIn(data: FormProps) {
-        console.log(data)
+    async function handleSignIn(data: FormProps) {
+        setIsLoading(true)
+        try {
+            const response = await User.signIn(data)
+            login(response.user)
+        } catch (error) {
+            const isAppError = AppError.isAppError(error)
+            const title = isAppError ? error.message : 'Não foi possivel fazer login. Tente novamente mais tarde.'
+            toast.show({
+                title,
+                placement: 'bottom',
+                bgColor: 'red.500'
+            })
+        } finally {
+
+            setIsLoading(false)
+        }
     }
 
     return (
@@ -95,7 +120,11 @@ export function SignIn() {
                         )}
                     />
 
-                    <Button title="Acessar" onPress={handleSubmit(handleSignIn)}/>
+                    <Button
+                        title="Acessar"
+                        onPress={handleSubmit(handleSignIn)}
+                        isLoading={isLoading}
+                    />
                 </Center>
 
                 <Text
