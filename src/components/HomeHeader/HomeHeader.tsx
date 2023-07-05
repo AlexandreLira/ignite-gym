@@ -4,9 +4,14 @@ import userPhotoDefaut from "@assets/userPhotoDefault.png"
 import { UserPhoto } from "@components/UserPhoto/UserPhoto";
 import { useAuth } from "@hooks/useAuth";
 import { TouchableOpacity } from "react-native";
+import { memo } from "react";
+import { api } from "@config/api";
 export function HeaderHome() {
     const { logout, user } = useAuth()
-    const avatar = user.avatar ? { uri: user.avatar } : userPhotoDefaut
+   
+    const avatarUrl = `${api.defaults.baseURL}/avatar/${user.avatar}` 
+    const avatar = user.avatar ? { uri: avatarUrl } : userPhotoDefaut
+
     function handleLogout() {
         logout()
     }
@@ -51,3 +56,4 @@ export function HeaderHome() {
         </HStack>
     )
 }
+

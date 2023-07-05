@@ -20,9 +20,10 @@ import { AuthNavigatorRoutesProps } from "@routes/auth.routes";
 
 import BackgroundImg from '@assets/background.png';
 import LogoSvg from '@assets/logo.svg'
-import { User } from "@services/userService";
+import { UserService } from "@services/userService";
 import { AppError } from "@utils/AppError";
 import { useAuth } from "@hooks/useAuth";
+import { ToastService } from "@services/ToastService";
 
 type FormDataProps = {
     name: string;
@@ -56,8 +57,7 @@ export function SignUp() {
     const { control, handleSubmit, formState: { errors } } = useForm<FormDataProps>({
         resolver: yupResolver(schema)
     });
-    const toast = useToast()
-    const { login } = useAuth()
+    const { signIn } = useAuth()
 
     function handleGoBack() {
         navigation.goBack()
@@ -68,28 +68,17 @@ export function SignUp() {
         try {
             const { email, name, password } = data
 
-            const response = await User.create({
+            const response = await UserService.create({
                 email, name, password
             })
 
             if (response.status !== 201) return
 
-            const loginUser = await User.signIn({ email, password })
-           
-            login(loginUser.user)
+            signIn({ email, password })
 
         } catch (error) {
-            const isAppError = error instanceof AppError
-            const title = isAppError ? error.message : 'Não foi possivel criar a conta. Tente novamente mais tarde.'
-
-            toast.show({
-                title,
-                placement: 'bottom',
-                bgColor: 'red.500',
-                width: '100%',
-                paddingX: 10
-            })
-
+            const message = 'Não foi possivel criar a conta. Tente novamente mais tarde.'
+            ToastService.error(error, message)
         } finally {
             setIsLoading(false)
         }

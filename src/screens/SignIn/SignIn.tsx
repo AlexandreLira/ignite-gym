@@ -5,7 +5,6 @@ import {
     Text,
     Heading,
     ScrollView,
-    useToast
 } from "native-base";
 import { useNavigation } from '@react-navigation/native'
 
@@ -19,10 +18,9 @@ import { AuthNavigatorRoutesProps } from "@routes/auth.routes";
 
 import { Input } from "@components/Input/Input";
 import { Button } from "@components/Button/Button";
-import { User } from "@services/userService";
-import { AppError } from "@utils/AppError";
 import { useState } from "react";
 import { useAuth } from "@hooks/useAuth";
+import { ToastService } from "@services/ToastService";
 
 type FormProps = {
     email: string;
@@ -41,9 +39,7 @@ export function SignIn() {
         resolver: yupResolver(schema)
     })
 
-    const { user, login } = useAuth()
-
-    const toast = useToast()
+    const { user, signIn } = useAuth()
 
 
     function handleNewAccount() {
@@ -53,16 +49,10 @@ export function SignIn() {
     async function handleSignIn(data: FormProps) {
         setIsLoading(true)
         try {
-            const response = await User.signIn(data)
-            login(response.user)
+            await signIn(data)
         } catch (error) {
-            const isAppError = AppError.isAppError(error)
-            const title = isAppError ? error.message : 'Não foi possivel fazer login. Tente novamente mais tarde.'
-            toast.show({
-                title,
-                placement: 'bottom',
-                bgColor: 'red.500'
-            })
+            const message = 'Não foi possivel fazer login. Tente novamente mais tarde.'
+            ToastService.error(error, message)
         } finally {
 
             setIsLoading(false)

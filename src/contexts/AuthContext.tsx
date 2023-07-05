@@ -1,17 +1,26 @@
 import { ReactNode, createContext, useEffect, useState } from "react";
 import { UserDTO } from '@dtos/UserDTO'
-import { User } from "@services/userService";
+import { UserService } from "@services/userService";
+import { AuthTokenService } from "@services/AuthTokeService";
+
+type signInProps = {
+    email: string;
+    password: string;
+}
+
 
 export type AuthContextDataProps = {
     user: UserDTO;
-    login: (data: any) => void;
-    logout: () => void;
     isLoadingUser: boolean;
+    logout: () => void;
+    signIn: (data: signInProps) => Promise<void>;
+    userUpdate: (data: UserDTO) => Promise<void>;
 }
 
 type AuthContextProviderProps = {
     children: ReactNode
 }
+
 
 export const AuthContext = createContext<AuthContextDataProps>({} as AuthContextDataProps);
 
@@ -19,15 +28,25 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
     const [user, setUser] = useState<UserDTO>({} as UserDTO)
     const [isLoadingUser, setIsLoadingUser] = useState(true)
 
-    async function login(user: UserDTO) {
-        await User.saveUser(user)
-        setUser(user)
+    async function signIn(data: signInProps) {
+        try {
+            const userlogged = await UserService.signIn(data)
+            if (userlogged.user && userlogged.token) {
+                await UserService.saveUser(userlogged.user)
+                await AuthTokenService.save(userlogged.token)
+                setUser(userlogged.user)
+            }
+        } catch (error) {
+            throw error
+        }
+
     }
 
     async function logout() {
         try {
             setIsLoadingUser(true)
-            await User.remove()
+            await UserService.remove()
+            await AuthTokenService.remove()
             setUser({} as UserDTO)
         } catch {
 
@@ -36,10 +55,20 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
         }
     }
 
-    async function getUser() {
+    async function userUpdate(data: UserDTO) {
         try {
-            const userLogged = await User.getUser()
-            if (userLogged) {
+            await UserService.saveUser(data)
+            setUser(data)
+        } catch (error) {
+            throw error
+        }
+    }
+
+    async function loadUserData() {
+        try {
+            const userLogged = await UserService.get()
+            const token = await AuthTokenService.get()
+            if (userLogged && token) {
                 setUser(userLogged)
             }
         } catch (error) {
@@ -51,16 +80,17 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
     }
 
     useEffect(() => {
-        getUser()
-    })
+        loadUserData()
+    }, [])
 
     return (
         <AuthContext.Provider
             value={{
                 user,
                 isLoadingUser,
-                login,
+                signIn,
                 logout,
+                userUpdate,
             }}
         >
             {children}
