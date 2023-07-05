@@ -14,7 +14,7 @@ export function Loading(props: LoadingProps){
     }
 
     return (
-        <Center bg="blue.100" flex={1}>
+        <Center flex={1}>
             <Spinner/>
         </Center>
     )

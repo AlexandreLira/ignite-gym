@@ -16,10 +16,17 @@ interface IUserSignIn {
 }
 
 interface ISignInReturn {
-    user: UserDTO
+    user: UserDTO;
+    token: string;
 }
 
-export class User {
+
+interface IUserUpdate {
+    name: string;
+    password: string;
+    old_password: string;
+}
+export class UserService {
     static async create(data: IUserCreate) {
         const { email, name, password } = data
         const payload = { email, name, password }
@@ -27,6 +34,19 @@ export class User {
 
         return result
     }
+
+
+    static async update(data: IUserUpdate) {
+        try {
+            const payload = data
+            const response = await api.put('/users', payload)
+            return response.data
+        } catch (error) {
+            console.log(error)
+            throw error
+        }
+    }
+
     static async signIn(user: IUserSignIn): Promise<ISignInReturn> {
         try {
             const payload = user
@@ -45,9 +65,9 @@ export class User {
         await AsyncStorage.removeItem(USER_STORAGE)
     }
 
-    static async getUser(): Promise<UserDTO> {
+    static async get(): Promise<UserDTO | null> {
         const response = await AsyncStorage.getItem(USER_STORAGE)
-
+        if (!response) return null
         const user = JSON.parse(response!)
 
         return user

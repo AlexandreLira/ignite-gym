@@ -15,7 +15,7 @@ type AppRoutes = {
     Home: undefined;
     History: undefined;
     Profile: undefined;
-    Exercise: undefined;
+    Exercise: { exerciseId: string };
 }
 
 type ScreensProps = {
