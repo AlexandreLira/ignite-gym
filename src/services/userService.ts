@@ -18,6 +18,7 @@ interface IUserSignIn {
 interface ISignInReturn {
     user: UserDTO;
     token: string;
+    refresh_token: string;
 }
 
 

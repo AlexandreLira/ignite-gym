@@ -2,6 +2,7 @@ import { ReactNode, createContext, useEffect, useState } from "react";
 import { UserDTO } from '@dtos/UserDTO'
 import { UserService } from "@services/userService";
 import { AuthTokenService } from "@services/AuthTokeService";
+import { api } from "@config/api";
 
 type signInProps = {
     email: string;
@@ -31,9 +32,12 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
     async function signIn(data: signInProps) {
         try {
             const userlogged = await UserService.signIn(data)
-            if (userlogged.user && userlogged.token) {
+            if (userlogged.user && userlogged.token && userlogged.refresh_token) {
                 await UserService.saveUser(userlogged.user)
-                await AuthTokenService.save(userlogged.token)
+                await AuthTokenService.save({
+                    token: userlogged.token,
+                    refresh_token: userlogged.refresh_token
+                })
                 setUser(userlogged.user)
             }
         } catch (error) {
@@ -82,6 +86,14 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
     useEffect(() => {
         loadUserData()
     }, [])
+
+    useEffect(() => {
+        const subscribe = api.registerInterceptTokenManager(logout)
+
+        return () => {
+            subscribe()
+        }
+    }, [logout])
 
     return (
         <AuthContext.Provider
